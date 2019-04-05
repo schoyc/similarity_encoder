@@ -244,15 +244,6 @@ for name, param in transform_names_:
 
 TRANSFORMS, input_transform_ph = init_transforms()
 
-
-# In[ ]:
-
-NP_TRANSFORMS = [
-    skimage.filters.gaussian(x_random, sigma=c) 0 to 0.55
-    skimage.exposure.adjust_gamma(x_random, gamma=c) 0.73 to 1
-]
-
-
 # In[ ]:
 
 def perform_transform(t, images):
@@ -273,9 +264,10 @@ def main():
     # In[24]:
     transforms = TRANSFORMS[:excluded_t] + TRANSFORMS[excluded_t + 1:] if excluded_t != -1 else TRANSFORMS
     t_names = list(transform_names.keys())
+    names = t_names
     if excluded_t != -1:
         names = t_names[:excluded_t] + t_names[excluded_t + 1:]
-        print("Training on the these transforms:", str(names))
+    print("Training on the these transforms:", str(names))
 
     encoder_name = "./encoder_all.h5" if excluded_t == -1 else "./encoder_no_%s.h5" % t_names[excluded_t]
     
@@ -284,7 +276,7 @@ def main():
     encoder.init_sess()
     encoder.init_weights()
 
-    encoder.train(x_train, transforms=all_but_brightness, s=32, epochs=100)
+    encoder.train(x_train, transforms=transforms, s=32, epochs=100)
     encoder.cifar_encoder.save_weights(encoder_name)
 
 if __name__ == '__main__':
