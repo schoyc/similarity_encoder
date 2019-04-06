@@ -186,11 +186,12 @@ class SiameseEncoder(object):
                               )
                 if np.isnan(loss):
                     print("[ERROR:] Epoch %d, Batch %d/%d, loss = %f, pos = %f, neg = %f" % (e, i, n, loss, pos, neg))
-                    break
+                    return False
 
                 if i % step == 0:
                     print("%d/%d samples: loss = %f" % (i, n, loss))
                     # print(l2)
+        return True
     
 
     def encode(self, x):
@@ -270,14 +271,17 @@ def main():
     print("Training on the these transforms:", str(names))
 
     encoder_name = "./encoder_all.h5" if excluded_t == -1 else "./encoder_no_%s.h5" % t_names[excluded_t]
-    
 
     encoder = SiameseEncoder(cifar_cnn, margin=np.sqrt(10), learning_rate=1e-4)
     encoder.init_sess()
     encoder.init_weights()
 
-    encoder.train(x_train, transforms=transforms, s=32, epochs=100)
-    encoder.cifar_encoder.save_weights(encoder_name)
+    success = encoder.train(x_train, transforms=transforms, s=32, epochs=100)
+    if success:
+        encoder.cifar_encoder.save_weights(encoder_name)
+        print("[log]: successfully trained encoder:", encoder_name)
+    else:
+        print("[log]: training failed for:", encoder_name)
 
 if __name__ == '__main__':
     main()
